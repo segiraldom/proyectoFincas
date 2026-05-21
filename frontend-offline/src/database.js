@@ -1,9 +1,11 @@
 let db = null
 
 export async function initDatabase() {
-  const SQL = await import('sql.js')
-  const wasm = await SQL.default()
-  db = new wasm.Database()
+  const initSqlJs = (await import('sql.js')).default
+  const SQL = await initSqlJs({
+    locateFile: (file) => `/${file}`,
+  })
+  db = new SQL.Database()
 
   db.run(`
     CREATE TABLE IF NOT EXISTS propietarios (
