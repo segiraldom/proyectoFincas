@@ -100,6 +100,71 @@
   overflow: auto;
 }
 
+.crud-form {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(180px, 1fr));
+  gap: 0.7rem;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.crud-form h3 {
+  grid-column: 1 / -1;
+  margin: 0 0 0.3rem 0;
+}
+
+.crud-form input,
+.crud-form select {
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 0.55rem 0.65rem;
+  font: inherit;
+}
+
+.crud-form select[multiple] {
+  min-height: 96px;
+}
+
+.form-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 0.6rem;
+}
+
+.form-actions button {
+  border: none;
+  border-radius: 8px;
+  padding: 0.55rem 0.8rem;
+  cursor: pointer;
+  background: #0f4c81;
+  color: #fff;
+}
+
+.form-actions button[type='button'] {
+  background: #64748b;
+}
+
+.row-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.row-actions button {
+  border: none;
+  border-radius: 6px;
+  padding: 0.35rem 0.55rem;
+  cursor: pointer;
+  background: #2563eb;
+  color: #fff;
+}
+
+.row-actions button.danger {
+  background: #dc2626;
+}
+
 table {
   width: 100%;
   border-collapse: collapse;
@@ -134,5 +199,9 @@ th {
 
   .cards {
     grid-template-columns: repeat(2, minmax(120px, 1fr));
+  }
+
+  .crud-form {
+    grid-template-columns: 1fr;
   }
 }
