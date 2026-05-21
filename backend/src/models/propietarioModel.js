@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
-const Finca = sequelize.define('Finca', {
+const Propietario = sequelize.define('Propietario', {
 
   id: {
     type: DataTypes.UUID,
@@ -14,31 +14,23 @@ const Finca = sequelize.define('Finca', {
     allowNull: false
   },
 
-  departamento: {
+  documento: {
     type: DataTypes.STRING,
-    allowNull: false
+    allowNull: false,
+    unique: true
   },
 
-  municipio: {
-    type: DataTypes.STRING,
-    allowNull: false
+  telefono: {
+    type: DataTypes.STRING
   },
 
-  area_total_hectareas: {
-    type: DataTypes.FLOAT
-  },
-
-  latitud: {
-    type: DataTypes.FLOAT
-  },
-
-  longitud: {
-    type: DataTypes.FLOAT
+  correo: {
+    type: DataTypes.STRING
   }
 
 }, {
-  tableName: 'fincas',
+  tableName: 'propietarios',
   timestamps: false
 });
 
-module.exports = Finca;
+module.exports = Propietario;
