@@ -60,7 +60,7 @@ services:
     container_name: fincas_frontend_offline
     restart: always
     ports:
-      - "5174:5174"
+      - "5175:5175"
     depends_on:
       - backend
     environment:

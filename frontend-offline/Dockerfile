@@ -9,5 +9,5 @@ FROM node:20
 WORKDIR /app
 COPY --from=build /app/dist ./dist
 RUN npm install -g serve
-EXPOSE 5174
-CMD ["serve", "-s", "dist", "-l", "5174"]
+EXPOSE 5175
+CMD ["serve", "-s", "dist", "-l", "5175"]
