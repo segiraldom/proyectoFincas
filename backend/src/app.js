@@ -17,6 +17,9 @@ app.use('/api/fincas', fincaRoutes);
 
 app.use('/api/propietarios', propietarioRoutes);
 
+const fincaPropietarioController = require('./controllers/fincaPropietarioController');
+app.post('/api/finca-propietario', fincaPropietarioController.crear);
+
 app.use('/api/actividades', actividadRoutes);
 
 app.use('/api/estadisticas', estadisticaRoutes);
