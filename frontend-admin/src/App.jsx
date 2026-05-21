@@ -19,6 +19,11 @@ function App() {
   const [fincas, setFincas] = useState([])
   const [actividades, setActividades] = useState([])
   const [propietarios, setPropietarios] = useState([])
+  const [mapFilters, setMapFilters] = useState({
+    departamento: 'TODOS',
+    actividad: 'TODAS',
+  })
+
   const fincasConUbicacion = useMemo(
     () =>
       fincas.filter(
@@ -30,6 +35,41 @@ function App() {
       ),
     [fincas],
   )
+
+  const departamentosDisponibles = useMemo(() => {
+    return [...new Set(fincas.map((f) => f.departamento).filter(Boolean))].sort((a, b) =>
+      a.localeCompare(b),
+    )
+  }, [fincas])
+
+  const actividadesDisponibles = useMemo(() => {
+    return [...new Set(actividades.map((a) => a.tipo).filter(Boolean))].sort((a, b) =>
+      a.localeCompare(b),
+    )
+  }, [actividades])
+
+  const fincaIdsConActividadFiltro = useMemo(() => {
+    if (mapFilters.actividad === 'TODAS') return null
+    return new Set(
+      actividades
+        .filter((a) => a.tipo === mapFilters.actividad)
+        .map((a) => a.finca_id)
+        .filter(Boolean),
+    )
+  }, [actividades, mapFilters.actividad])
+
+  const fincasMapaFiltradas = useMemo(() => {
+    return fincasConUbicacion.filter((finca) => {
+      const cumpleDepartamento =
+        mapFilters.departamento === 'TODOS' || finca.departamento === mapFilters.departamento
+
+      const cumpleActividad =
+        mapFilters.actividad === 'TODAS' ||
+        (fincaIdsConActividadFiltro && fincaIdsConActividadFiltro.has(finca.id))
+
+      return cumpleDepartamento && cumpleActividad
+    })
+  }, [fincasConUbicacion, mapFilters, fincaIdsConActividadFiltro])
 
   const [saving, setSaving] = useState(false)
 
@@ -186,7 +226,39 @@ function App() {
       return (
         <div className="map-block">
           <h3>Ubicación de fincas registradas</h3>
-          {fincasConUbicacion.length === 0 ? (
+          <div className="map-filters">
+            <label>
+              Departamento
+              <select
+                value={mapFilters.departamento}
+                onChange={(e) => setMapFilters((prev) => ({ ...prev, departamento: e.target.value }))}
+              >
+                <option value="TODOS">Todos</option>
+                {departamentosDisponibles.map((dep) => (
+                  <option key={dep} value={dep}>
+                    {dep}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label>
+              Actividad
+              <select
+                value={mapFilters.actividad}
+                onChange={(e) => setMapFilters((prev) => ({ ...prev, actividad: e.target.value }))}
+              >
+                <option value="TODAS">Todas</option>
+                {actividadesDisponibles.map((tipo) => (
+                  <option key={tipo} value={tipo}>
+                    {tipo}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+
+          {fincasMapaFiltradas.length === 0 ? (
             <p className="state">No hay fincas con latitud/longitud para mostrar.</p>
           ) : (
             <MapContainer center={[4.5709, -74.2973]} zoom={6} scrollWheelZoom className="map-container">
@@ -194,7 +266,7 @@ function App() {
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               />
-              {fincasConUbicacion.map((finca) => (
+              {fincasMapaFiltradas.map((finca) => (
                 <Marker key={finca.id} position={[Number(finca.latitud), Number(finca.longitud)]}>
                   <Popup>
                     <strong>{finca.nombre}</strong>

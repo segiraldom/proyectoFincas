@@ -176,6 +176,29 @@
   margin-top: 0;
 }
 
+.map-filters {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(220px, 1fr));
+  gap: 0.8rem;
+  margin-bottom: 0.9rem;
+}
+
+.map-filters label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.9rem;
+  color: #1e293b;
+}
+
+.map-filters select {
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 0.55rem 0.65rem;
+  font: inherit;
+  background: #fff;
+}
+
 .map-container {
   height: 520px;
   width: 100%;
@@ -220,6 +243,10 @@ th {
   }
 
   .crud-form {
+    grid-template-columns: 1fr;
+  }
+
+  .map-filters {
     grid-template-columns: 1fr;
   }
 }
