@@ -1,4 +1,4 @@
-const { Finca, Actividad } = require('../models');
+const { Finca, Actividad, Propietario } = require('../models');
 const sequelize = require('../config/database');
 
 const getEstadisticas = async (req, res) => {
@@ -8,6 +8,8 @@ const getEstadisticas = async (req, res) => {
     const totalFincas = await Finca.count();
 
     const totalActividades = await Actividad.count();
+
+    const totalPropietarios = await Propietario.count();
 
     const hectareas = await Finca.sum('area_total_hectareas');
 
@@ -22,6 +24,7 @@ const getEstadisticas = async (req, res) => {
     res.json({
       totalFincas,
       totalActividades,
+      totalPropietarios,
       totalHectareas: hectareas || 0,
       actividadesPorTipo
     });

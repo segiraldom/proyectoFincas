@@ -1,6 +1,7 @@
 const Finca = require('./fincaModel');
 const Actividad = require('./actividadModel');
 const Propietario = require('./propietarioModel');
+const FincaPropietario = require('./fincaPropietarioModel');
 
 Finca.hasMany(Actividad, {
   foreignKey: 'finca_id',
@@ -13,14 +14,14 @@ Actividad.belongsTo(Finca, {
 });
 
 Finca.belongsToMany(Propietario, {
-  through: 'finca_propietario',
+  through: FincaPropietario,
   foreignKey: 'finca_id',
   otherKey: 'propietario_id',
   as: 'propietarios'
 });
 
 Propietario.belongsToMany(Finca, {
-  through: 'finca_propietario',
+  through: FincaPropietario,
   foreignKey: 'propietario_id',
   otherKey: 'finca_id',
   as: 'fincas'
@@ -29,5 +30,6 @@ Propietario.belongsToMany(Finca, {
 module.exports = {
   Finca,
   Actividad,
-  Propietario
+  Propietario,
+  FincaPropietario
 };

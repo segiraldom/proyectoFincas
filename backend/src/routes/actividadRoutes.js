@@ -4,12 +4,15 @@ const router = express.Router();
 
 const {
   getAllActividades,
+  getActividadById,
   createActividad,
   updateActividad,
   deleteActividad
 } = require('../controllers/actividadController');
 
 router.get('/', getAllActividades);
+
+router.get('/:id', getActividadById);
 
 router.post('/', createActividad);
 

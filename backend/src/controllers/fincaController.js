@@ -90,6 +90,14 @@ const createFinca = async (req, res) => {
 
   try {
 
+    const { nombre, departamento, municipio } = req.body;
+
+    if (!nombre || !departamento || !municipio) {
+      return res.status(400).json({
+        message: 'nombre, departamento y municipio son obligatorios'
+      });
+    }
+
     const {
       propietarios,
       ...fincaData
@@ -156,7 +164,18 @@ const updateFinca = async (req, res) => {
 
     }
 
-    res.json(finca);
+    const fincaActualizada = await Finca.findByPk(finca.id, {
+      include: [
+        { model: Actividad, as: 'actividades' },
+        {
+          model: Propietario,
+          as: 'propietarios',
+          through: { attributes: [] }
+        }
+      ]
+    });
+
+    res.json(fincaActualizada);
 
   } catch (error) {
 

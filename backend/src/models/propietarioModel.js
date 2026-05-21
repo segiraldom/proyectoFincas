@@ -26,6 +26,12 @@ const Propietario = sequelize.define('Propietario', {
 
   correo: {
     type: DataTypes.STRING
+  },
+
+  fecha_registro: {
+    type: DataTypes.DATE,
+    allowNull: false,
+    defaultValue: DataTypes.NOW
   }
 
 }, {

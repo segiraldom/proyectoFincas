@@ -34,6 +34,12 @@ const Finca = sequelize.define('Finca', {
 
   longitud: {
     type: DataTypes.FLOAT
+  },
+
+  fecha_registro: {
+    type: DataTypes.DATE,
+    allowNull: false,
+    defaultValue: DataTypes.NOW
   }
 
 }, {

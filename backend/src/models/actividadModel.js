@@ -46,6 +46,12 @@ sequelize.define('Actividad', {
 
   area_hectareas: {
     type: DataTypes.FLOAT
+  },
+
+  fecha_registro: {
+    type: DataTypes.DATE,
+    allowNull: false,
+    defaultValue: DataTypes.NOW
   }
 
 }, {
