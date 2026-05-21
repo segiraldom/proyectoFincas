@@ -71,6 +71,38 @@ function App() {
     })
   }, [fincasConUbicacion, mapFilters, fincaIdsConActividadFiltro])
 
+  const actividadesPorFinca = useMemo(() => {
+    const map = new Map()
+    actividades.forEach((a) => {
+      if (!a.finca_id) return
+      if (!map.has(a.finca_id)) map.set(a.finca_id, [])
+      map.get(a.finca_id).push(a)
+    })
+    return map
+  }, [actividades])
+
+  const statsFiltradosMapa = useMemo(() => {
+    const fincaIds = new Set(fincasMapaFiltradas.map((f) => f.id))
+    const actividadesFiltradas = actividades.filter(
+      (a) => fincaIds.has(a.finca_id) && (mapFilters.actividad === 'TODAS' || a.tipo === mapFilters.actividad),
+    )
+
+    const propietariosIds = new Set()
+    fincasMapaFiltradas.forEach((f) => (f.propietarios || []).forEach((p) => propietariosIds.add(p.id)))
+
+    const hectareas = fincasMapaFiltradas.reduce(
+      (acc, f) => acc + Number(f.area_total_hectareas || 0),
+      0,
+    )
+
+    return {
+      totalFincas: fincasMapaFiltradas.length,
+      totalActividades: actividadesFiltradas.length,
+      totalPropietarios: propietariosIds.size,
+      totalHectareas: hectareas,
+    }
+  }, [fincasMapaFiltradas, actividades, mapFilters.actividad])
+
   const [saving, setSaving] = useState(false)
 
   const [fincaForm, setFincaForm] = useState({
@@ -226,38 +258,6 @@ function App() {
       return (
         <div className="map-block">
           <h3>Ubicación de fincas registradas</h3>
-          <div className="map-filters">
-            <label>
-              Departamento
-              <select
-                value={mapFilters.departamento}
-                onChange={(e) => setMapFilters((prev) => ({ ...prev, departamento: e.target.value }))}
-              >
-                <option value="TODOS">Todos</option>
-                {departamentosDisponibles.map((dep) => (
-                  <option key={dep} value={dep}>
-                    {dep}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label>
-              Actividad
-              <select
-                value={mapFilters.actividad}
-                onChange={(e) => setMapFilters((prev) => ({ ...prev, actividad: e.target.value }))}
-              >
-                <option value="TODAS">Todas</option>
-                {actividadesDisponibles.map((tipo) => (
-                  <option key={tipo} value={tipo}>
-                    {tipo}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-
           {fincasMapaFiltradas.length === 0 ? (
             <p className="state">No hay fincas con latitud/longitud para mostrar.</p>
           ) : (
@@ -274,6 +274,9 @@ function App() {
                     {finca.departamento} - {finca.municipio}
                     <br />
                     Área: {finca.area_total_hectareas ?? 0} ha
+                    <br />
+                    <strong>Actividades:</strong>{' '}
+                    {(actividadesPorFinca.get(finca.id) || []).map((a) => a.tipo).join(', ') || 'Sin actividades'}
                   </Popup>
                 </Marker>
               ))}
@@ -547,8 +550,47 @@ function App() {
         </header>
 
         {activeTab === 'mapa' ? (
+          <div className="map-filters top-filters">
+            <label>
+              Departamento
+              <select
+                value={mapFilters.departamento}
+                onChange={(e) => setMapFilters((prev) => ({ ...prev, departamento: e.target.value }))}
+              >
+                <option value="TODOS">Todos</option>
+                {departamentosDisponibles.map((dep) => (
+                  <option key={dep} value={dep}>
+                    {dep}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label>
+              Actividad
+              <select
+                value={mapFilters.actividad}
+                onChange={(e) => setMapFilters((prev) => ({ ...prev, actividad: e.target.value }))}
+              >
+                <option value="TODAS">Todas</option>
+                {actividadesDisponibles.map((tipo) => (
+                  <option key={tipo} value={tipo}>
+                    {tipo}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+        ) : null}
+
+        {activeTab === 'mapa' ? (
           <section className="cards">
-            {cards.map((card) => (
+            {[
+              { label: 'Fincas registradas', value: statsFiltradosMapa.totalFincas },
+              { label: 'Actividades productivas', value: statsFiltradosMapa.totalActividades },
+              { label: 'Propietarios', value: statsFiltradosMapa.totalPropietarios },
+              { label: 'Hectáreas totales', value: Number(statsFiltradosMapa.totalHectareas || 0).toFixed(2) },
+            ].map((card) => (
               <article key={card.label} className="card">
                 <span>{card.label}</span>
                 <strong>{card.value}</strong>
