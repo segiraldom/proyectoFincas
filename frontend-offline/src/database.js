@@ -4,6 +4,9 @@ export async function initDatabase() {
   const initSqlJs = (await import('sql.js')).default
   const SQL = await initSqlJs({
     locateFile: (file) => `/${file}`,
+  }).catch((err) => {
+    console.error('Error loading SQL.js:', err)
+    throw err
   })
   db = new SQL.Database()
 

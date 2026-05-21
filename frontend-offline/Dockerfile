@@ -8,6 +8,8 @@ RUN npm run build
 FROM node:20
 WORKDIR /app
 COPY --from=build /app/dist ./dist
-RUN npm install -g serve
+COPY vite.config.js ./
+COPY package*.json ./
+RUN npm install
 EXPOSE 5175
-CMD ["serve", "-s", "dist", "-l", "5175"]
+CMD ["npx", "vite", "preview", "--host", "0.0.0.0", "--port", "5175"]

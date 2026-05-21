@@ -8,7 +8,7 @@ export default defineConfig({
     viteStaticCopy({
       targets: [
         {
-          src: 'node_modules/sql.js/dist/sql-wasm.wasm',
+          src: 'node_modules/sql.js/dist/sql-wasm-browser.wasm',
           dest: '.',
         },
       ],
@@ -17,6 +17,27 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',
     port: 5175,
+    middlewareMode: false,
+    configureServer: (server) => {
+      server.middlewares.use((req, res, next) => {
+        if (req.url.endsWith('.wasm')) {
+          res.setHeader('Content-Type', 'application/wasm')
+        }
+        next()
+      })
+    },
+  },
+  preview: {
+    host: '0.0.0.0',
+    port: 5175,
+    configureServer: (server) => {
+      server.middlewares.use((req, res, next) => {
+        if (req.url.endsWith('.wasm')) {
+          res.setHeader('Content-Type', 'application/wasm')
+        }
+        next()
+      })
+    },
   },
   optimizeDeps: {
     exclude: ['sql.js'],

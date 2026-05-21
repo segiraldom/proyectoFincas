@@ -12,7 +12,8 @@ import { sincronizar, estaSincronizando } from './sync.js'
 import './App.css'
 
 function App() {
-  const [dbReady, setDbReady] = useState(false)
+   const [dbReady, setDbReady] = useState(false)
+   const [errorInit, setErrorInit] = useState(null)
   const [online, setOnline] = useState(navigator.onLine)
   const [syncState, setSyncState] = useState('idle')
   const [syncMsg, setSyncMsg] = useState('')
@@ -42,14 +43,19 @@ function App() {
     }
   }, [])
 
-  // init DB
-  useEffect(() => {
-    ;(async () => {
-      await initDatabase()
-      setDbReady(true)
-      cargarDatos()
-    })()
-  }, [])
+// init DB
+   useEffect(() => {
+     ;(async () => {
+       try {
+         await initDatabase()
+         setDbReady(true)
+         cargarDatos()
+       } catch (err) {
+         console.error('Error al inicializar DB:', err)
+         setErrorInit(err.message || 'Error desconocido')
+       }
+     })()
+   }, [])
 
   const cargarDatos = () => {
     setFincas(listarFincas())
@@ -142,9 +148,13 @@ function App() {
     cargarDatos()
   }
 
-  if (!dbReady) {
-    return <div className="app-offline"><p className="cargando">Inicializando base de datos local...</p></div>
-  }
+if (errorInit) {
+     return <div className="app-offline"><p className="error">Error: {errorInit}</p></div>
+   }
+
+   if (!dbReady) {
+     return <div className="app-offline"><p className="cargando">Inicializando base de datos local...</p></div>
+   }
 
   return (
     <div className="app-offline">
