@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet'
 import './App.css'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
@@ -18,6 +19,18 @@ function App() {
   const [fincas, setFincas] = useState([])
   const [actividades, setActividades] = useState([])
   const [propietarios, setPropietarios] = useState([])
+  const fincasConUbicacion = useMemo(
+    () =>
+      fincas.filter(
+        (finca) =>
+          finca.latitud !== null &&
+          finca.longitud !== null &&
+          !Number.isNaN(Number(finca.latitud)) &&
+          !Number.isNaN(Number(finca.longitud)),
+      ),
+    [fincas],
+  )
+
   const [saving, setSaving] = useState(false)
 
   const [fincaForm, setFincaForm] = useState({
@@ -169,6 +182,35 @@ function App() {
       )
     }
 
+    if (activeTab === 'mapa') {
+      return (
+        <div className="map-block">
+          <h3>Ubicación de fincas registradas</h3>
+          {fincasConUbicacion.length === 0 ? (
+            <p className="state">No hay fincas con latitud/longitud para mostrar.</p>
+          ) : (
+            <MapContainer center={[4.5709, -74.2973]} zoom={6} scrollWheelZoom className="map-container">
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
+              {fincasConUbicacion.map((finca) => (
+                <Marker key={finca.id} position={[Number(finca.latitud), Number(finca.longitud)]}>
+                  <Popup>
+                    <strong>{finca.nombre}</strong>
+                    <br />
+                    {finca.departamento} - {finca.municipio}
+                    <br />
+                    Área: {finca.area_total_hectareas ?? 0} ha
+                  </Popup>
+                </Marker>
+              ))}
+            </MapContainer>
+          )}
+        </div>
+      )
+    }
+
     return (
       <table>
         <thead>
@@ -304,6 +346,8 @@ function App() {
   }
 
   const renderForm = () => {
+    if (activeTab === 'mapa') return null
+
     if (activeTab === 'fincas') {
       return (
         <form className="crud-form" onSubmit={handleSubmitFinca}>
@@ -420,6 +464,7 @@ function App() {
           <button className={activeTab === 'fincas' ? 'active' : ''} onClick={() => setActiveTab('fincas')}>Fincas</button>
           <button className={activeTab === 'actividades' ? 'active' : ''} onClick={() => setActiveTab('actividades')}>Actividades</button>
           <button className={activeTab === 'propietarios' ? 'active' : ''} onClick={() => setActiveTab('propietarios')}>Propietarios</button>
+          <button className={activeTab === 'mapa' ? 'active' : ''} onClick={() => setActiveTab('mapa')}>Mapa</button>
         </nav>
       </aside>
 
