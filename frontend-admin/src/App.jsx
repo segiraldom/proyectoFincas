@@ -474,14 +474,16 @@ function App() {
           <button onClick={loadData}>Actualizar</button>
         </header>
 
-        <section className="cards">
-          {cards.map((card) => (
-            <article key={card.label} className="card">
-              <span>{card.label}</span>
-              <strong>{card.value}</strong>
-            </article>
-          ))}
-        </section>
+        {activeTab === 'mapa' ? (
+          <section className="cards">
+            {cards.map((card) => (
+              <article key={card.label} className="card">
+                <span>{card.label}</span>
+                <strong>{card.value}</strong>
+              </article>
+            ))}
+          </section>
+        ) : null}
 
         {loading ? <p className="state">Cargando datos...</p> : null}
         {error ? <p className="state error">{error}</p> : null}
