@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   initDatabase,
   crearPropietario,
@@ -8,16 +8,18 @@ import {
   crearActividad,
   listarActividades,
 } from './database.js'
-import { sincronizar, estaSincronizando } from './sync.js'
+import { sincronizar, estaSincronizando, verificarBackend } from './sync.js'
 import './App.css'
 
 function App() {
    const [dbReady, setDbReady] = useState(false)
    const [errorInit, setErrorInit] = useState(null)
+  const [backendOnline, setBackendOnline] = useState(false)
   const [online, setOnline] = useState(navigator.onLine)
   const [syncState, setSyncState] = useState('idle')
   const [syncMsg, setSyncMsg] = useState('')
   const [tab, setTab] = useState('fincas')
+  const syncIntervalRef = useRef(null)
 
   const [fincas, setFincas] = useState([])
   const [propietarios, setPropietarios] = useState([])
@@ -32,14 +34,26 @@ function App() {
   const [actividadesDetalle, setActividadesDetalle] = useState([])
   const [nuevaActividad, setNuevaActividad] = useState({ tipo: '', descripcion: '', cantidad: '', unidad: '', produccion: '', unidad_produccion: '', area_hectareas: '' })
 
+  // Health check periódico al backend cada 15s
   useEffect(() => {
-    const handleOnline = () => setOnline(true)
-    const handleOffline = () => setOnline(false)
-    window.addEventListener('online', handleOnline)
-    window.addEventListener('offline', handleOffline)
+    const checkHealth = async () => {
+      const disponible = await verificarBackend()
+      setBackendOnline(disponible)
+      setOnline(disponible)
+    }
+
+    checkHealth() // verificar al montar
+    const healthInterval = setInterval(checkHealth, 15000)
+
+    window.addEventListener('online', checkHealth)
+    window.addEventListener('offline', () => {
+      setOnline(false)
+      setBackendOnline(false)
+    })
+
     return () => {
-      window.removeEventListener('online', handleOnline)
-      window.removeEventListener('offline', handleOffline)
+      clearInterval(healthInterval)
+      window.removeEventListener('online', checkHealth)
     }
   }, [])
 
@@ -79,6 +93,7 @@ function App() {
       else if (evento === 'completado') {
         setSyncMsg(`✔ ${data.enviados} registros sincronizados`)
         setSyncState('ok')
+        cargarDatos()
         setTimeout(() => { setSyncState('idle'); setSyncMsg('') }, 3000)
       }
       else if (evento === 'sin_pendientes') {
@@ -87,19 +102,41 @@ function App() {
         setTimeout(() => { setSyncState('idle'); setSyncMsg('') }, 2000)
       }
       else if (evento === 'error') {
-        setSyncMsg('✘ Error al sincronizar')
+        setSyncMsg(`✘ ${data?.mensaje || 'Error al sincronizar'}`)
         setSyncState('error')
+        setTimeout(() => { setSyncState('idle'); setSyncMsg('') }, 5000)
       }
     })
-    cargarDatos()
   }
 
-  // auto-sync when online
+  // Auto-sync cuando el backend está disponible y hay pendientes
   useEffect(() => {
-    if (online && totalPendientes > 0 && !estaSincronizando()) {
+    if (backendOnline && totalPendientes > 0 && !estaSincronizando()) {
       handleSync()
     }
-  }, [online, totalPendientes])
+  }, [backendOnline, totalPendientes])
+
+  // Reintento periódico cada 30s mientras haya pendientes y backend disponible
+  useEffect(() => {
+    if (syncIntervalRef.current) {
+      clearInterval(syncIntervalRef.current)
+      syncIntervalRef.current = null
+    }
+
+    if (backendOnline && totalPendientes > 0) {
+      syncIntervalRef.current = setInterval(() => {
+        if (!estaSincronizando() && totalPendientes > 0) {
+          handleSync()
+        }
+      }, 30000)
+    }
+
+    return () => {
+      if (syncIntervalRef.current) {
+        clearInterval(syncIntervalRef.current)
+      }
+    }
+  }, [backendOnline, totalPendientes])
 
   const handleCrearPropietario = (e) => {
     e.preventDefault()
@@ -162,16 +199,19 @@ if (errorInit) {
         <h1>📋 Registro Fincas</h1>
         <p className="offline-subtitle">Captura offline • SQLite local</p>
         <div className="status-bar">
-          <span className={`status-dot ${online ? 'online' : 'offline'}`} />
-          <span>{online ? 'En línea' : 'Sin conexión'}</span>
+          <span className={`status-dot ${backendOnline ? 'online' : 'offline'}`} />
+          <span>{backendOnline ? '✅ Conectado' : '❌ Sin conexión'}</span>
           <span className="sep">|</span>
-          <span>Pendientes: {totalPendientes}</span>
+          <span>📦 Pendientes: {totalPendientes}</span>
+          {backendOnline && totalPendientes > 0 && (
+            <span className="auto-sync-badge">⏳ Auto-sync activo</span>
+          )}
           {syncState !== 'idle' && (
             <span className={`sync-msg ${syncState}`}>{syncMsg}</span>
           )}
         </div>
         <button className="btn-sync" onClick={handleSync} disabled={estaSincronizando()}>
-          {estaSincronizando() ? '⏳ Sincronizando...' : '🔄 Sincronizar'}
+          {estaSincronizando() ? '⏳ Sincronizando...' : '🔄 Sincronizar ahora'}
         </button>
       </header>
 

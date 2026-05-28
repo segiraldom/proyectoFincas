@@ -26,6 +26,11 @@ app.use('/api/estadisticas', estadisticaRoutes);
 
 app.use('/api/sync', syncRoutes);
 
+// Health check endpoint para verificar disponibilidad del backend
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
 app.get('/', (req, res) => {
 
   res.json({

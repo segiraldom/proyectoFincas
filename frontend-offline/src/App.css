@@ -96,6 +96,21 @@ body {
 .sync-msg.error { background: rgba(153, 27, 27, 0.4); color: #fca5a5; border: 1px solid rgba(153, 27, 27, 0.8); }
 .sync-msg.sincronizando { background: rgba(30, 58, 138, 0.4); color: #93c5fd; border: 1px solid rgba(30, 58, 138, 0.8); }
 
+.auto-sync-badge {
+  font-size: 0.75rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  background: rgba(59, 130, 246, 0.2);
+  color: #93c5fd;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
 .btn-sync {
   margin-top: 1rem;
   border: none;
