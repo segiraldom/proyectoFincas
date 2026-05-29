@@ -3,7 +3,8 @@ version: '3.9'
 services:
 
   postgres:
-    image: postgres:16
+    build:
+      context: ./database
     container_name: fincas_postgres
 
     restart: always
@@ -18,7 +19,6 @@ services:
 
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
 
   backend:
     build:
